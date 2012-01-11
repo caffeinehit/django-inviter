@@ -28,7 +28,7 @@ def send_invite(invitee, inviter, url = None, **kwargs):
     """
     ctx = {'invitee': invitee, 'inviter': inviter}
     ctx.update(kwargs)
-    ctx.update(site = Site.objects.get_current())
+    ctx.update(site = Site.objects.get_current(), url = url)
     ctx = template.Context(ctx)
     
     subject = template.loader.get_template('inviter/email/subject.txt')
