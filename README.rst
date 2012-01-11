@@ -1,4 +1,5 @@
-# django-inviter
+django-inviter
+==============
 
 Let your users invite other users.
 
