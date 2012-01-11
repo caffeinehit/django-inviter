@@ -7,8 +7,10 @@ Replace this with more appropriate tests for your application.
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.test import TestCase
-from inviter.utils import invite
+from django.utils.http import int_to_base36
+from inviter.utils import invite, token_generator
 import shortuuid
 
 
@@ -38,5 +40,26 @@ class InviteTest(TestCase):
         self.assertTrue(user.is_active)
         self.assertEqual(2, len(mail.outbox))
         self.assertEqual(3, User.objects.count())
+        
+    def test_views(self):
+        user = invite("foo@example.com", self.inviter)
+        url = reverse('inviter:register', args = [int_to_base36(user.id), 
+            token_generator.make_token(user)])
+        
+        resp = self.client.get(url)
+        
+        self.assertEqual(200, resp.status_code, resp.status_code)
+        
+        resp = self.client.post(url, {'username': 'testuser', 'email': 'foo@examplecom',
+            'password': 'test-1234'})
+        
+        self.assertEqual(302, resp.status_code, resp.status_code)
+        
+        self.client.login(username = 'testuser', password = 'test-1234')
+        
+        resp = self.client.get(reverse('inviter:done'))
+
+        self.assertEqual(200, resp.status_code, resp.status_code)        
+        
         
 

@@ -12,4 +12,10 @@ class RegistrationForm(forms.ModelForm):
         model = User
         fields = ('username', 'password', 'email')
     
+    def save(self, *args, **kwargs):
+        user = super(RegistrationForm, self).save(*args,**kwargs)
+        user.set_password(self.cleaned_data.get('password'))
+        user.save()
+        return user
+    
     
