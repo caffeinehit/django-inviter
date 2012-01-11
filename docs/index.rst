@@ -99,10 +99,12 @@ There are a couple of editable settings
     
 .. attribute:: INVITER_REDIRECT
     
-    :Default: ``reverse('inviter:registration')``
+    :Default: ``'inviter:register'``
     :type: str
     
-    The URL to redirect the user to when the signup completes.
+    The URL to redirect the user to when the signup completes. This is either a
+    URL to reverse via ``reverse(INVITER_REDIRECT)`` or a simple string. 
+    Reversing the URL is tried before using the string.
     
 .. attribute:: INVITER_TOKEN_GENERATOR
 

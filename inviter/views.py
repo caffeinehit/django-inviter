@@ -64,7 +64,10 @@ class Register(TemplateView):
         
         if form.is_valid() and self.token_generator.check_token(user, token):
             form.save()
-            return HttpResponseRedirect(reverse(self.redirect_url))
+            try:
+                return HttpResponseRedirect(reverse(self.redirect_url))
+            except:
+                return HttpResponseRedirect(self.redirect_url)
         return self.render_to_response({'invitee': user, 'form': form})
 
 class Done(TemplateView):
