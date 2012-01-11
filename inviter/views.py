@@ -6,10 +6,11 @@ from django.http import Http404, HttpResponseRedirect
 from django.utils import importlib
 from django.utils.http import base36_to_int
 from django.views.generic.base import TemplateView
+from django.utils.functional import LazyObject
 
 
 FORM = getattr(settings, 'INVITER_FORM', 'inviter.forms.RegistrationForm')
-REDIRECT = getattr(settings, 'INVITER_REDIRECT', reverse('inviter:register'))
+REDIRECT = getattr(settings, 'INVITER_REDIRECT', 'inviter:done')
 TOKEN_GENERATOR = getattr(settings, 'INVITER_TOKEN_GENERATOR', 'django.contrib.auth.tokens.default_token_generator')
 
 def import_attribute(path):
@@ -63,7 +64,7 @@ class Register(TemplateView):
         
         if form.is_valid() and self.token_generator.check_token(user, token):
             form.save()
-            return HttpResponseRedirect(self.redirect_url)
+            return HttpResponseRedirect(reverse(self.redirect_url))
         return self.render_to_response({'invitee': user, 'form': form})
 
 class Done(TemplateView):
