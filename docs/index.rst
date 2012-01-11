@@ -68,7 +68,7 @@ A useful application of this is keeping track of who invites whom:
     
     def send(invitee, inviter, **kwargs):
         Invites.objects.get_or_create(invitee = invitee, inviter = inviter)
-        utils.send_invite(invitee, inviter)
+        utils.send_invite(invitee, inviter, **kwargs)
 
     utils.invite("foo@example.com", request.user, sendfn=send)       
     
