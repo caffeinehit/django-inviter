@@ -9,7 +9,7 @@ from django.views.generic.base import TemplateView
 
 
 FORM = getattr(settings, 'INVITER_FORM', 'inviter.forms.RegistrationForm')
-REDIRECT = getattr(settings, 'INVITER_REDIRECT', reverse('inviter:registration-done'))
+REDIRECT = getattr(settings, 'INVITER_REDIRECT', reverse('inviter:register'))
 TOKEN_GENERATOR = getattr(settings, 'INVITER_TOKEN_GENERATOR', 'django.contrib.auth.tokens.default_token_generator')
 
 def import_attribute(path):
@@ -50,7 +50,7 @@ class Register(TemplateView):
         assert uidb36 is not None and token is not None
         user = self.get_user(uidb36)
         
-        return self.render_to_response({'invitee': user, 'form': self.form(None)})
+        return self.render_to_response({'invitee': user, 'form': self.form(instance=user)})
         
     def post(self, request, uidb36, token):
         """
@@ -59,7 +59,7 @@ class Register(TemplateView):
         """
         assert uidb36 is not None and token is not None
         user = self.get_user(uidb36)
-        form = self.form(user, request.POST)
+        form = self.form(request.POST, instance = user)
         
         if form.is_valid() and self.token_generator.check_token(user, token):
             form.save()
@@ -68,6 +68,9 @@ class Register(TemplateView):
 
 class Done(TemplateView):
     template_name = 'inviter/done.html'
+    
+    def get(self, request):
+        return self.render_to_response({})
     
     
     
