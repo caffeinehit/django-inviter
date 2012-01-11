@@ -2,11 +2,11 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.utils import importlib
+from django.utils.functional import LazyObject
 from django.utils.http import base36_to_int
 from django.views.generic.base import TemplateView
-from django.utils.functional import LazyObject
 
 
 FORM = getattr(settings, 'INVITER_FORM', 'inviter.forms.RegistrationForm')
@@ -42,7 +42,7 @@ class Register(TemplateView):
         except (ValueError, User.DoesNotExist):
             raise Http404("No such invited user.")
         return user
-        
+
     def get(self, request, uidb36, token):
         """
         Unfortunately just a copy of 
@@ -50,6 +50,9 @@ class Register(TemplateView):
         """
         assert uidb36 is not None and token is not None
         user = self.get_user(uidb36)
+        
+        if not self.token_generator.check_token(user, token):
+            return HttpResponseForbidden()
         
         return self.render_to_response({'invitee': user, 'form': self.form(instance=user)})
         
@@ -60,9 +63,13 @@ class Register(TemplateView):
         """
         assert uidb36 is not None and token is not None
         user = self.get_user(uidb36)
+        
+        if not self.token_generator.check_token(user, token):
+            return HttpResponseForbidden()
+        
         form = self.form(request.POST, instance = user)
         
-        if form.is_valid() and self.token_generator.check_token(user, token):
+        if form.is_valid():
             form.save()
             try:
                 return HttpResponseRedirect(reverse(self.redirect_url))
@@ -76,7 +83,3 @@ class Done(TemplateView):
     def get(self, request):
         return self.render_to_response({})
     
-    
-    
-    
-        
