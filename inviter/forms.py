@@ -6,7 +6,9 @@ class RegistrationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(RegistrationForm, self).__init__(*args,**kwargs)
         # Hide the UUID string
-        self.fields['username'].initial = ''
+        self.initial['username'] = ''
+        self.fields['password'].help_text = ''
+        
 
     class Meta:
         model = User
