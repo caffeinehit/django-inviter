@@ -1,0 +1,6 @@
+Hey 
+
+{{ inviter }} has invited you to {{ site }}. Go ahead and register your account
+now at {{ url }}.
+
+The {{ site }} team

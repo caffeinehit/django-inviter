@@ -1,0 +1,1 @@
+Hey, {{ inviter }} has invited you to {{ site }}!
