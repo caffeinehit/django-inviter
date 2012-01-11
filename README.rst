@@ -2,5 +2,6 @@
 
 Let your users invite other users.
 
-See `documentation <http://django-inviter.readthedocs.org>`_.
+See `code <https://github.com/caffeinehit/django-inviter>`_ and 
+`documentation <http://django-inviter.readthedocs.org>`_.
 
