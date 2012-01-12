@@ -13,6 +13,8 @@ from django.utils.http import int_to_base36
 from inviter.utils import invite, token_generator
 import shortuuid
 
+from django.contrib.auth import tests
+
 
 class InviteTest(TestCase):
     def setUp(self):
@@ -43,17 +45,18 @@ class InviteTest(TestCase):
         
     def test_views(self):
         user = invite("foo@example.com", self.inviter)
-        url = reverse('inviter:register', args = [int_to_base36(user.id), 
-            token_generator.make_token(user)])
+        url_parts = int_to_base36(user.id), token_generator.make_token(user)
+        
+        url = reverse('inviter:register', args = url_parts)
         
         resp = self.client.get(url)
         
         self.assertEqual(200, resp.status_code, resp.status_code)
         
-        resp = self.client.post(url, {'username': 'testuser', 'email': 'foo@examplecom',
+        resp = self.client.post(url, {'username': 'testuser', 'email': 'foo@example.com',
             'password': 'test-1234'})
         
-        self.assertEqual(302, resp.status_code, resp.status_code)
+        self.assertEqual(302, resp.status_code, resp.content)
         
         self.client.login(username = 'testuser', password = 'test-1234')
         

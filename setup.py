@@ -10,7 +10,8 @@ setup(
     long_description=open('README.rst').read(),
     author='Alen Mujezinovic',
     author_email='alen@caffeinehit.com',
-    packages=find_packages(),
+    packages= filter(
+        lambda package: not package.startswith('example'), find_packages()),
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

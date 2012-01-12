@@ -76,9 +76,9 @@ def invite(email, inviter, sendfn = send_invite, **kwargs):
         user = User.objects.create(username = shortuuid.uuid(), email = email,
             is_active = False)
         user.set_password(User.objects.make_random_password())
+        user.save()
     
     url_parts = int_to_base36(user.id), token_generator.make_token(user)
-    
     url = reverse('inviter:register', args=url_parts)
     
     sendfn(user, inviter, url = url, **kwargs)

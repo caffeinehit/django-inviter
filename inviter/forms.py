@@ -17,6 +17,7 @@ class RegistrationForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         user = super(RegistrationForm, self).save(*args,**kwargs)
         user.set_password(self.cleaned_data.get('password'))
+        user.is_active = True
         user.save()
         return user
     

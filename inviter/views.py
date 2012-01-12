@@ -11,7 +11,7 @@ from django.views.generic.base import TemplateView
 
 FORM = getattr(settings, 'INVITER_FORM', 'inviter.forms.RegistrationForm')
 REDIRECT = getattr(settings, 'INVITER_REDIRECT', 'inviter:done')
-TOKEN_GENERATOR = getattr(settings, 'INVITER_TOKEN_GENERATOR', 'django.contrib.auth.tokens.default_token_generator')
+TOKEN_GENERATOR = getattr(settings, 'INVITER_TOKEN_GENERATOR', 'inviter.tokens.generator')
 
 def import_attribute(path):
     """
@@ -50,7 +50,7 @@ class Register(TemplateView):
         """
         assert uidb36 is not None and token is not None
         user = self.get_user(uidb36)
-        
+
         if not self.token_generator.check_token(user, token):
             return HttpResponseForbidden()
         
