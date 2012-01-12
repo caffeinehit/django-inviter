@@ -99,7 +99,7 @@ There are a couple of editable settings
     
 .. attribute:: INVITER_REDIRECT
     
-    :Default: ``'inviter:register'``
+    :Default: ``'inviter:done'``
     :type: str
     
     The URL to redirect the user to when the signup completes. This is either a
@@ -108,7 +108,7 @@ There are a couple of editable settings
     
 .. attribute:: INVITER_TOKEN_GENERATOR
 
-    :Default: ``'django.contrib.auth.tokens.default_token_generator'``
+    :Default: ``'inviter.tokens.generator'``
     :type: str
     
     The generator used to create a token which is used to assemble an invite
