@@ -11,7 +11,7 @@ setup(
     author='Alen Mujezinovic',
     author_email='alen@caffeinehit.com',
     packages= filter(
-        lambda package: not package.startswith('example'), find_packages()),
+        lambda package: not package.startswith('testproject'), find_packages()),
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
