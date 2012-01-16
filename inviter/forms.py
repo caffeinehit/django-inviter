@@ -28,7 +28,7 @@ class RegistrationForm(forms.ModelForm):
         user = super(RegistrationForm, self).save(*args,**kwargs)
         user.set_password(self.cleaned_data.get('new_password1'))
         user.is_active = True
-        if kwargs.get('commit'):
+        if kwargs.get('commit', True):
             user.save()
         return user
     
