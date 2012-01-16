@@ -54,7 +54,7 @@ class InviteTest(TestCase):
         self.assertEqual(200, resp.status_code, resp.status_code)
         
         resp = self.client.post(url, {'username': 'testuser', 'email': 'foo@example.com',
-            'password': 'test-1234'})
+            'new_password1': 'test-1234', 'new_password2': 'test-1234'})
         
         self.assertEqual(302, resp.status_code, resp.content)
         
