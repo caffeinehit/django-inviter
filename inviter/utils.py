@@ -13,7 +13,7 @@ FROM_EMAIL = getattr(settings, 'INVITER_FROM_EMAIL', settings.DEFAULT_FROM_EMAIL
 
 token_generator = import_attribute(TOKEN_GENERATOR)
 
-def send_invite(invitee, inviter, url = None, **kwargs):
+def send_invite(invitee, inviter, url=None, **kwargs):
     """
     Send the default invitation email assembled from 
     `inviter/email/subject.txt` and `inviter/email/body.txt`
@@ -21,18 +21,21 @@ def send_invite(invitee, inviter, url = None, **kwargs):
     Both templates will receive all the optional arguments.
     
     :param invitee: The invited user
-    :type invitee: User
     :param inviter: The inviting user
-    :type inviter: User
     :param url: The invite URL
+    :param subject_template: The template to render for the subject
+    :param body_template: The template to render for the body
     """
     ctx = {'invitee': invitee, 'inviter': inviter}
     ctx.update(kwargs)
-    ctx.update(site = Site.objects.get_current(), url = url)
+    ctx.update(site=Site.objects.get_current(), url=url)
     ctx = template.Context(ctx)
     
-    subject = template.loader.get_template('inviter/email/subject.txt')
-    body = template.loader.get_template('inviter/email/body.txt')
+    subject_template = kwargs.pop('subject_template', 'inviter/email/subject.txt')
+    body_template = kwargs.pop('body_template', 'inviter/email/body.txt')
+    
+    subject = template.loader.get_template(subject_template)
+    body = template.loader.get_template(body_template)
     
     subject = subject.render(ctx)
     body = body.render(ctx)
@@ -41,7 +44,7 @@ def send_invite(invitee, inviter, url = None, **kwargs):
     
     send_mail(subject, body, FROM_EMAIL, [invitee.email])
 
-def invite(email, inviter, sendfn = send_invite, **kwargs):
+def invite(email, inviter, sendfn=send_invite, **kwargs):
     """
     Invite a given email address and return a user model with the given email
     address.
@@ -69,18 +72,18 @@ def invite(email, inviter, sendfn = send_invite, **kwargs):
     """
     
     try:
-        user = User.objects.get(email = email)
+        user = User.objects.get(email=email)
         if user.is_active:
             return user
     except User.DoesNotExist:
-        user = User.objects.create(username = shortuuid.uuid(), email = email,
-            is_active = False)
+        user = User.objects.create(username=shortuuid.uuid(), email=email,
+            is_active=False)
         user.set_password(User.objects.make_random_password())
         user.save()
     
     url_parts = int_to_base36(user.id), token_generator.make_token(user)
     url = reverse('inviter:register', args=url_parts)
     
-    sendfn(user, inviter, url = url, **kwargs)
+    sendfn(user, inviter, url=url, **kwargs)
     return user
     

@@ -38,7 +38,7 @@ class Register(TemplateView):
     def get_user(self, uidb36):
         try:
             uid_int = base36_to_int(uidb36) 
-            user = User.objects.get(id = uid_int)
+            user = User.objects.get(id=uid_int)
         except (ValueError, User.DoesNotExist):
             raise Http404("No such invited user.")
         return user
@@ -59,7 +59,7 @@ class Register(TemplateView):
     def post(self, request, uidb36, token):
         """
         Unfortunately just a copy of 
-        ``django.contrib.auth.views.password_reset_confirm``        
+        :attr:`django.contrib.auth.views.password_reset_confirm`
         """
         assert uidb36 is not None and token is not None
         user = self.get_user(uidb36)
@@ -67,7 +67,7 @@ class Register(TemplateView):
         if not self.token_generator.check_token(user, token):
             return HttpResponseForbidden()
         
-        form = self.form(request.POST, instance = user)
+        form = self.form(request.POST, instance=user)
         
         if form.is_valid():
             form.save()
