@@ -5,6 +5,7 @@ from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.utils.http import int_to_base36
+from inviter.models import OptOut
 from inviter.views import import_attribute, TOKEN_GENERATOR
 import shortuuid
 
@@ -13,7 +14,7 @@ FROM_EMAIL = getattr(settings, 'INVITER_FROM_EMAIL', settings.DEFAULT_FROM_EMAIL
 
 token_generator = import_attribute(TOKEN_GENERATOR)
 
-def send_invite(invitee, inviter, url=None, **kwargs):
+def send_invite(invitee, inviter, url=None, opt_out_url=None, **kwargs):
     """
     Send the default invitation email assembled from 
     `inviter/email/subject.txt` and `inviter/email/body.txt`
@@ -25,6 +26,7 @@ def send_invite(invitee, inviter, url=None, **kwargs):
     :param url: The invite URL
     :param subject_template: The template to render for the subject
     :param body_template: The template to render for the body
+    :param opt_out_url: A URL that users can permanently opt out of invitations
     """
     ctx = {'invitee': invitee, 'inviter': inviter}
     ctx.update(kwargs)
@@ -56,21 +58,19 @@ def invite(email, inviter, sendfn=send_invite, **kwargs):
 
     If the user does exist and is *not* inactive, do nothing.
 
-    Returns the user object.
+    Returns the user object or ``None`` if the email address was on the list
+    of blocked receivers.
     
     To customize the sent email, pass in a custom sending function. The sending
     function will receive all the optional arguments.
     
     :param email: The email address
-    :type email: str
     :param inviter: The user inviting the email address
-    :type inviter: User model
-    :param sendfn: An email sending function. Defaults to
-        `inviter.utils.send_invite`
-    :type sendfn: function
-    :rtype: User
+    :param sendfn: An email sending function. Defaults to :attr:`inviter.utils.send_invite`
+    :returns: :class:`django.contrib.auth.models.User` or ``None``
     """
-    
+    if OptOut.objects.is_blocked(email): 
+        return None
     try:
         user = User.objects.get(email=email)
         if user.is_active:
@@ -83,6 +83,9 @@ def invite(email, inviter, sendfn=send_invite, **kwargs):
     
     url_parts = int_to_base36(user.id), token_generator.make_token(user)
     url = reverse('inviter:register', args=url_parts)
+    
+    opt_out_url = reverse('inviter:opt-out', args=url_parts)
+    kwargs.update(opt_out_url=opt_out_url)
     
     sendfn(user, inviter, url=url, **kwargs)
     return user
