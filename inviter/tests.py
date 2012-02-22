@@ -30,23 +30,27 @@ class InviteTest(TestCase):
         settings.EMAIL_BACKEND = self.original_email_backend
 
     def test_inviting(self):
-        user = invite("foo@example.com", self.inviter)        
+        user, sent = invite("foo@example.com", self.inviter)    
+        self.assertTrue(sent)    
         self.assertFalse(user.is_active)
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(3, User.objects.count())
         
-        user = invite("foo@example.com", self.inviter)
+        user, sent = invite("foo@example.com", self.inviter)
+        self.assertTrue(sent)
         self.assertFalse(user.is_active)
         self.assertEqual(2, len(mail.outbox))
         self.assertEqual(3, User.objects.count())
         
-        user = invite("existing@example.com", self.inviter)
+        user, sent = invite("existing@example.com", self.inviter)
+        self.assertFalse(sent)
         self.assertTrue(user.is_active)
         self.assertEqual(2, len(mail.outbox))
         self.assertEqual(3, User.objects.count())
         
     def test_views(self):
-        user = invite("foo@example.com", self.inviter)
+        user, sent = invite("foo@example.com", self.inviter)
+        self.assertTrue(sent)
         url_parts = int_to_base36(user.id), token_generator.make_token(user)
         
         url = reverse('inviter:register', args=url_parts)
@@ -69,7 +73,8 @@ class InviteTest(TestCase):
     def test_opt_out(self):
         self.assertEqual(2, User.objects.count())
         
-        user = invite("foo@example.com", self.inviter)
+        user, sent = invite("foo@example.com", self.inviter)
+        self.assertTrue(sent)
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(3, User.objects.count())
         
@@ -84,7 +89,8 @@ class InviteTest(TestCase):
         self.assertEqual(reverse('inviter:opt-out-done'), urlparse.urlparse(resp['Location']).path)
         self.assertEqual(2, User.objects.count())
         
-        user = invite("foo@example.com", self.inviter)
+        user, sent = invite("foo@example.com", self.inviter)
+        self.assertFalse(sent)
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(1, OptOut.objects.count())
         self.assertTrue(OptOut.objects.is_blocked("foo@example.com"))
