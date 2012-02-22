@@ -48,7 +48,7 @@ class Register(UserMixin, TemplateView):
     def get(self, request, uidb36, token):
         """
         Unfortunately just a copy of 
-        ``django.contrib.auth.views.password_reset_confirm``
+        :attr:`django.contrib.auth.views.password_reset_confirm`
         """
         assert uidb36 is not None and token is not None
         user = self.get_user(uidb36)

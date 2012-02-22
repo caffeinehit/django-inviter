@@ -17,16 +17,16 @@ token_generator = import_attribute(TOKEN_GENERATOR)
 def send_invite(invitee, inviter, url=None, opt_out_url=None, **kwargs):
     """
     Send the default invitation email assembled from 
-    `inviter/email/subject.txt` and `inviter/email/body.txt`
+    ``inviter/email/subject.txt`` and ``inviter/email/body.txt``
     
-    Both templates will receive all the optional arguments.
+    Both templates will receive all the ``kwargs``.
     
     :param invitee: The invited user
     :param inviter: The inviting user
     :param url: The invite URL
     :param subject_template: The template to render for the subject
     :param body_template: The template to render for the body
-    :param opt_out_url: A URL that users can permanently opt out of invitations
+    :param opt_out_url: A URL where users can permanently opt out of invitations
     """
     ctx = {'invitee': invitee, 'inviter': inviter}
     ctx.update(kwargs)
@@ -42,42 +42,65 @@ def send_invite(invitee, inviter, url=None, opt_out_url=None, **kwargs):
     subject = subject.render(ctx)
     body = body.render(ctx)
     
-    subject = ' '.join(subject.split('\n'))
+    subject = ' '.join(subject.split('\n')) # No newlines in subject lines allowed
     
     send_mail(subject, body, FROM_EMAIL, [invitee.email])
 
 def invite(email, inviter, sendfn=send_invite, **kwargs):
     """
-    Invite a given email address and return a user model with the given email
-    address.
+    Invite a given email address and return a ``(User, sent)`` tuple similar
+    to the Django :meth:`django.db.models.Manager.get_or_create` method.
     
-    If the user does not exist yet, create one, give it a UUID username, mark
-    it as inactive and send the email.
+    If a user with ``email`` address does not exist:
     
-    If the user does exist, send another email.
+    * Creates a :class:`django.contrib.auth.models.User` object 
+    * Set ``user.email = email``
+    * Set ``user.is_active = False``
+    * Set a random password
+    * Send the invitation email
+    * Return ``(user, True)``
+    
+    If a user with ``email`` address exists and ``user.is_active == False``:
+    
+    * Re-send the invitation 
+    * Return ``(user, True)``
+    
+    If a user with ``email`` address exists:
+    
+    * Don't send  the invitation
+    * Return ``(user, False)``
+    
+    If the email address is blocked:
+    
+    * Don't send the invitation
+    * Return ``(None, False)``
+     
+    To customize sending, pass in a new ``sendfn`` function as documented by
+    :attr:`inviter.utils.send_invite`:
+    
+    ::
+    
+        sendfn = lambda invitee, inviter, **kwargs: 1
+        invite("foo@bar.com", request.user, sendfn = sendfn)         
 
-    If the user does exist and is *not* inactive, do nothing.
-
-    Returns the user object or ``None`` if the email address was on the list
-    of blocked receivers.
-    
-    To customize the sent email, pass in a custom sending function. The sending
-    function will receive all the optional arguments.
     
     :param email: The email address
     :param inviter: The user inviting the email address
     :param sendfn: An email sending function. Defaults to :attr:`inviter.utils.send_invite`
-    :returns: :class:`django.contrib.auth.models.User` or ``None``
     """
+    
     if OptOut.objects.is_blocked(email): 
-        return None
+        return None, False
     try:
         user = User.objects.get(email=email)
         if user.is_active:
-            return user
+            return user, False
     except User.DoesNotExist:
-        user = User.objects.create(username=shortuuid.uuid(), email=email,
-            is_active=False)
+        user = User.objects.create(
+            username=shortuuid.uuid(),
+            email=email,
+            is_active=False
+        )
         user.set_password(User.objects.make_random_password())
         user.save()
     
@@ -88,5 +111,5 @@ def invite(email, inviter, sendfn=send_invite, **kwargs):
     kwargs.update(opt_out_url=opt_out_url)
     
     sendfn(user, inviter, url=url, **kwargs)
-    return user
+    return user, True
     

@@ -25,7 +25,7 @@ Add ``inviter`` and ``django.contrib.sites`` to your ``INSTALLED_APPS``
         'inviter'
     )
     
-Include ``inviter.urls`` into your root ``urls.py`` file under the ``inviter``
+Include :attr:`inviter.urls` into your root ``urls.py`` file under the ``inviter``
 namespace
   
 ::
@@ -38,7 +38,7 @@ namespace
 Usage
 -----
 
-To invite people make use of ``inviter.utils.invite``
+To invite people make use of :attr:`inviter.utils.invite`
 
 ::
 
@@ -46,7 +46,7 @@ To invite people make use of ``inviter.utils.invite``
     
     invite("foo@example.com", request.user, current_time = datetime.now())
 
-``inviter.utils.invite`` also allows you to make use of a custom email sending
+:attr:`inviter.utils.invite` also allows you to make use of a custom email sending
 function, say to send HTML emails
 
 :: 
@@ -72,10 +72,10 @@ A useful application of this is keeping track of who invites whom:
 
     utils.invite("foo@example.com", request.user, sendfn=send)       
     
-Consult ``inviter.utils.invite`` and ``inviter.utils.send_invite`` for more 
+Consult :attr:`inviter.utils.invite` and :attr:`inviter.utils.send_invite` for more 
 information.
 
-By default ``inviter.utils.send_invite`` will render ``inviter/email/subject.txt``
+By default :attr:`inviter.utils.send_invite` will render ``inviter/email/subject.txt``
 and ``inviter/email/body.txt`` for the email.
 
 ``/inviter/register.html`` and ``inviter/done.html`` are rendered when 
@@ -92,7 +92,7 @@ There are a couple of editable settings
 
 .. attribute:: INVITER_FORM
 
-    :Default: ``'inviter.forms.RegistrationForm'``
+    :Default: :class:`inviter.forms.RegistrationForm`
     :type: str
     
     The form to be used when an invited user signs up.
@@ -120,5 +120,12 @@ There are a couple of editable settings
     
     The email address used to send invites from    
     
+API
+---
+
+.. toctree::
+    :maxdepth: 3
+    
+    inviter    
 
 Made by `Caffeinehit Ltd <http://www.caffeinehit.com/>`_. 
