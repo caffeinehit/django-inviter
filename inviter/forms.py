@@ -8,7 +8,7 @@ import hashlib
 class RegistrationForm(forms.ModelForm):
     """ The standard form that is displayed to users when registering. It gives
     a user the option to change their email address. """
-    email = forms.CharField(label=_("Email address"), widget=forms.EmailField)
+    email = forms.EmailField(label=_("Email address"))
     new_password1 = forms.CharField(label=_("New password"), widget=forms.PasswordInput)
     new_password2 = forms.CharField(label=_("New password confirmation"), widget=forms.PasswordInput)
 
@@ -42,6 +42,7 @@ class OptOutForm(forms.ModelForm):
     """ Dummy form for opting out. """
     class Meta:
         model = User
+        fields = ()
     
     def save(self):
         """ Delete the user object from the database and store the SHA1 hashed
