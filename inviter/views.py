@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.utils import importlib
-from django.utils.functional import LazyObject
 from django.utils.http import base36_to_int
 from django.views.generic.base import TemplateView
 from inviter.forms import OptOutForm
