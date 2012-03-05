@@ -101,7 +101,7 @@ def invite(email, inviter, sendfn=send_invite, **kwargs):
             email=email,
             is_active=False
         )
-        user.set_password(User.objects.make_random_password())
+        user.set_unusable_password()
         user.save()
     
     url_parts = int_to_base36(user.id), token_generator.make_token(user)
