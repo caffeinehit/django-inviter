@@ -24,7 +24,11 @@ def import_attribute(path):
     return getattr(module, function)
 
 class UserMixin(object):
+    """ Handles retrieval of users from the token and does a bit of access
+    management. """
+    
     token_generator = import_attribute(TOKEN_GENERATOR)
+    
     def get_user(self, uidb36):
         try:
             uid_int = base36_to_int(uidb36) 
@@ -32,6 +36,23 @@ class UserMixin(object):
         except (ValueError, User.DoesNotExist):
             raise Http404("No such invited user.")
         return user
+    
+    def dispatch(self, request, uidb36, token, *args, **kwargs):
+        """ 
+        Overriding the default dispatch method on Django's views to do 
+        some token validation and if necessary deny access to the resource. 
+        
+        Also passes the user as first argument after the request argument
+        to the handler method.
+        """
+        assert uidb36 is not None and token is not None
+        user = self.get_user(uidb36)
+
+        if not self.token_generator.check_token(user, token):
+            return HttpResponseForbidden()
+    
+        return super(UserMixin, self).dispatch(request, user, *args, **kwargs)
+        
 
 class Register(UserMixin, TemplateView):
     """
@@ -44,30 +65,18 @@ class Register(UserMixin, TemplateView):
     form = import_attribute(FORM)
     redirect_url = REDIRECT
 
-    def get(self, request, uidb36, token):
+    def get(self, request, user):
         """
         Unfortunately just a copy of 
         :attr:`django.contrib.auth.views.password_reset_confirm`
         """
-        assert uidb36 is not None and token is not None
-        user = self.get_user(uidb36)
-
-        if not self.token_generator.check_token(user, token):
-            return HttpResponseForbidden()
-        
         return self.render_to_response({'invitee': user, 'form': self.form(instance=user)})
         
-    def post(self, request, uidb36, token):
+    def post(self, request, user):
         """
         Unfortunately just a copy of 
         :attr:`django.contrib.auth.views.password_reset_confirm`
         """
-        assert uidb36 is not None and token is not None
-        user = self.get_user(uidb36)
-        
-        if not self.token_generator.check_token(user, token):
-            return HttpResponseForbidden()
-        
         form = self.form(request.POST, instance=user)
         
         if form.is_valid():
@@ -90,24 +99,12 @@ class OptOut(UserMixin, TemplateView):
     :class:`inviter.forms.OptOutForm`. """
     template_name = 'inviter/opt-out.html'
     
-    def get(self, request, uidb36, token):
-        assert uidb36 is not None and token is not None
-        user = self.get_user(uidb36)
-
-        if not self.token_generator.check_token(user, token):
-            return HttpResponseForbidden()
-        
+    def get(self, request, user):
         form = OptOutForm(instance=user)
         
         return self.render_to_response({'form': form})
     
-    def post(self, request, uidb36, token):
-        assert uidb36 is not None and token is not None
-        user = self.get_user(uidb36)
-
-        if not self.token_generator.check_token(user, token):
-            return HttpResponseForbidden()
-        
+    def post(self, request, user):
         form = OptOutForm(request.POST, instance=user)
         
         if form.is_valid():
