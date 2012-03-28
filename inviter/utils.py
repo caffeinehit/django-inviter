@@ -46,7 +46,7 @@ def send_invite(invitee, inviter, url=None, opt_out_url=None, **kwargs):
     
     send_mail(subject, body, FROM_EMAIL, [invitee.email])
 
-def invite(email, inviter, sendfn=send_invite, **kwargs):
+def invite(email, inviter, sendfn=send_invite, resend=True, **kwargs):
     """
     Invite a given email address and return a ``(User, sent)`` tuple similar
     to the Django :meth:`django.db.models.Manager.get_or_create` method.
@@ -87,6 +87,7 @@ def invite(email, inviter, sendfn=send_invite, **kwargs):
     :param email: The email address
     :param inviter: The user inviting the email address
     :param sendfn: An email sending function. Defaults to :attr:`inviter.utils.send_invite`
+    :param resend: Resend email to users that are not registered yet    
     """
     
     if OptOut.objects.is_blocked(email): 
@@ -94,6 +95,8 @@ def invite(email, inviter, sendfn=send_invite, **kwargs):
     try:
         user = User.objects.get(email=email)
         if user.is_active:
+            return user, False
+        if not resend:
             return user, False
     except User.DoesNotExist:
         user = User.objects.create(

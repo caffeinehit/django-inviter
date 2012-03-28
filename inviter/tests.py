@@ -36,12 +36,21 @@ class InviteTest(TestCase):
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(3, User.objects.count())
         
+        # Resend the mail
         user, sent = invite("foo@example.com", self.inviter)
         self.assertTrue(sent)
         self.assertFalse(user.is_active)
         self.assertEqual(2, len(mail.outbox))
         self.assertEqual(3, User.objects.count())
         
+        # Don't resend the mail
+        user, sent = invite("foo@example.com", self.inviter, resend = False)
+        self.assertFalse(sent)
+        self.assertFalse(user.is_active)
+        self.assertEqual(2, len(mail.outbox))
+        self.assertEqual(3, User.objects.count())        
+        
+        # Don't send the email to active users
         user, sent = invite("existing@example.com", self.inviter)
         self.assertFalse(sent)
         self.assertTrue(user.is_active)
